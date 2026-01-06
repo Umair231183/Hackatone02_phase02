@@ -9,11 +9,19 @@ export default function ProtectedRoute({ children }) {
   const router = useRouter();
   const { addNotification } = useNotification();
   const [authorized, setAuthorized] = useState(undefined); // undefined = loading, true/false = loaded
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // Mark that we're on the client side
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return; // Only run on client side
+
     // Check if user is logged in by checking for token in localStorage
     const token = localStorage.getItem('token');
-    
+
     if (!token) {
       // No token found, redirect to login
       addNotification('Please log in to access this page', 'info');
@@ -23,10 +31,10 @@ export default function ProtectedRoute({ children }) {
       // Token exists, allow access
       setAuthorized(true);
     }
-  }, [router, addNotification]);
+  }, [isClient, router, addNotification]);
 
   // Show loading state while checking authentication
-  if (authorized === undefined) {
+  if (!isClient || authorized === undefined) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 flex items-center justify-center">
         <div className="text-center">
